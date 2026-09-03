@@ -371,6 +371,7 @@ export const App: React.FC = () => {
             >
               <PriorityDeck
                 userName={settings.userName}
+                isDarkMode={settings.isDarkMode}
                 tasks={tasks}
                 projects={projects}
                 activePriority={activePriority}

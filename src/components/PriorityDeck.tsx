@@ -9,14 +9,13 @@ import {
   Trash2, 
   Check, 
   ListFilter, 
-  X,
-  Sparkles,
-  Layers
+  X
 } from 'lucide-react';
 import { Task, Project, TaskPriority } from '../types';
 
 interface PriorityDeckProps {
   userName: string;
+  isDarkMode: boolean;
   tasks: Task[];
   projects: Project[];
   activePriority: TaskPriority;
@@ -30,6 +29,7 @@ interface PriorityDeckProps {
 
 export const PriorityDeck: React.FC<PriorityDeckProps> = ({
   userName,
+  isDarkMode,
   tasks,
   projects,
   activePriority,
@@ -76,7 +76,7 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
   // Card color based on active priority
   const cardColor = activePriority === 1 ? 'bg-[#FF5335]' : activePriority === 2 ? 'bg-[#503699]' : 'bg-[#E56345]';
 
-  // Pagination navigation
+  // Pagination navigation (in lockstep with the bottom page pills)
   const handlePrevCard = (e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (priorityTasks.length <= 1) return;
@@ -149,6 +149,10 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
     onDeleteTask(taskId);
   };
 
+  // Strict high-contrast colors (Guaranteed readable: Deep Charcoal in Light Mode, White in Dark Mode)
+  const headingColor = isDarkMode ? '#FFFFFF' : '#1E1733';
+  const subtitleColor = isDarkMode ? '#DDD6FE' : '#4B3E65';
+
   return (
     <div className="w-full h-full flex flex-col justify-between max-w-4xl mx-auto px-6 sm:px-12 py-6 sm:py-10 select-none">
       {/* Top Bar: Tomato Logo + App Name + Actions (Screenshot 2 & 3) */}
@@ -159,18 +163,39 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
             <span className="w-6 h-6 rounded-full bg-[#FF5335] inline-block shadow-sm" />
             <span className="absolute -top-0.5 right-1 w-2 h-2 rounded-full bg-[#4ADE80]" />
           </div>
-          <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight font-sans">
+          <span 
+            className="text-base sm:text-lg font-black tracking-tight font-sans"
+            style={{ color: headingColor }}
+          >
             pomodoro<span className="text-[#FF5335]">.</span>
           </span>
         </div>
 
-        {/* Right side: Manage all cards button + Avatar */}
-        <div className="flex items-center gap-2.5">
+        {/* Right side: Priority switcher & All Tasks button + Avatar */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Priority Tabs Switcher */}
+          <div className="flex items-center p-1 rounded-full bg-white/95 dark:bg-white/15 border border-black/10 dark:border-white/15 shadow-sm">
+            {[1, 2, 3].map((p) => (
+              <button
+                key={p}
+                onClick={() => onSelectPriority(p as TaskPriority)}
+                className={`px-3 py-1 rounded-full text-xs font-black transition-all cursor-pointer ${
+                  activePriority === p
+                    ? 'bg-[#503699] text-white shadow-sm'
+                    : 'text-slate-700 dark:text-white/80 hover:bg-black/5 dark:hover:bg-white/10'
+                }`}
+              >
+                P{p}
+              </button>
+            ))}
+          </div>
+
           <motion.button
             whileHover={{ scale: 1.06 }}
             whileTap={{ scale: 0.94 }}
             onClick={() => setIsManageModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/90 dark:bg-white/15 hover:bg-white dark:hover:bg-white/25 text-slate-900 dark:text-white text-xs font-bold border border-slate-200 dark:border-white/15 shadow-sm transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/95 dark:bg-white/15 hover:bg-white dark:hover:bg-white/25 text-xs font-bold border border-black/10 dark:border-white/15 shadow-sm transition-all cursor-pointer"
+            style={{ color: headingColor }}
             title="Manage all tasks & cards"
           >
             <ListFilter size={14} className="text-[#FF5335]" />
@@ -200,20 +225,29 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
         </div>
       </div>
 
-      {/* Main Title & Card Count Header with high-contrast text */}
+      {/* Main Title & Card Count Header (GUARANTEED 100% READABLE HIGH CONTRAST) */}
       <div className="my-5 sm:my-7 text-center sm:text-left flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
         <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h1 
+            className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight"
+            style={{ color: headingColor }}
+          >
             Choose priorities
           </h1>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-purple-200 mt-1 font-semibold">
-            Select a high-impact goal or swipe through your cards
+          <p 
+            className="text-xs sm:text-sm mt-1 font-bold"
+            style={{ color: subtitleColor }}
+          >
+            Priority {activePriority} • {hasTasks ? `Browsing card ${cardIndex + 1} of ${priorityTasks.length}` : 'No active cards'}
           </p>
         </div>
 
         {/* Card Counter Badge if multiple cards exist */}
         {priorityTasks.length > 1 && (
-          <div className="flex items-center justify-center gap-2 self-center sm:self-auto px-4 py-1.5 rounded-full bg-slate-200/80 dark:bg-white/20 text-xs font-bold text-slate-900 dark:text-white">
+          <div 
+            className="flex items-center justify-center gap-2 self-center sm:self-auto px-4 py-1.5 rounded-full bg-white/95 dark:bg-white/20 text-xs font-black border border-black/10 dark:border-white/15 shadow-sm"
+            style={{ color: headingColor }}
+          >
             <span>Card {cardIndex + 1} of {priorityTasks.length}</span>
           </div>
         )}
@@ -227,7 +261,8 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
             whileHover={{ scale: 1.15, x: -3 }}
             whileTap={{ scale: 0.85 }}
             onClick={handlePrevCard}
-            className="absolute left-2 sm:left-6 md:left-12 z-20 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white dark:bg-[#2A2242] shadow-xl border border-black/10 dark:border-white/20 flex items-center justify-center text-slate-900 dark:text-white cursor-pointer"
+            className="absolute left-2 sm:left-6 md:left-12 z-20 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white dark:bg-[#2A2242] shadow-xl border border-black/10 dark:border-white/20 flex items-center justify-center cursor-pointer"
+            style={{ color: headingColor }}
             title="Previous card"
           >
             <ChevronLeft size={22} />
@@ -271,8 +306,8 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
                           e.stopPropagation();
                           setCardIndex(idx);
                         }}
-                        className={`h-2 rounded-full transition-all cursor-pointer ${
-                          cardIndex === idx ? 'w-6 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'
+                        className={`h-2.5 rounded-full transition-all cursor-pointer ${
+                          cardIndex === idx ? 'w-7 bg-white' : 'w-2.5 bg-white/40 hover:bg-white/70'
                         }`}
                         title={`Go to card ${idx + 1}`}
                       />
@@ -388,7 +423,8 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
             whileHover={{ scale: 1.15, x: 3 }}
             whileTap={{ scale: 0.85 }}
             onClick={handleNextCard}
-            className="absolute right-2 sm:right-6 md:right-12 z-20 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white dark:bg-[#2A2242] shadow-xl border border-black/10 dark:border-white/20 flex items-center justify-center text-slate-900 dark:text-white cursor-pointer"
+            className="absolute right-2 sm:right-6 md:right-12 z-20 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white dark:bg-[#2A2242] shadow-xl border border-black/10 dark:border-white/20 flex items-center justify-center cursor-pointer"
+            style={{ color: headingColor }}
             title="Next card"
           >
             <ChevronRight size={22} />
@@ -396,56 +432,41 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
         )}
       </div>
 
-      {/* Bottom Priority Selector Row */}
-      <div className="flex items-center justify-center gap-3.5 sm:gap-5 pt-4 pb-2">
-        {/* Priority 1 */}
-        <motion.button
-          whileHover={{ scale: 1.12 }}
-          whileTap={{ scale: 0.88 }}
-          onClick={() => onSelectPriority(1)}
-          className={`w-13 h-13 sm:w-16 sm:h-16 rounded-full flex items-center justify-center font-black text-sm sm:text-base transition-all duration-300 shadow-md cursor-pointer ${
-            activePriority === 1
-              ? 'bg-white border-2 border-dashed border-[#503699] text-[#503699] ring-4 ring-[#503699]/20'
-              : 'bg-[#FF5335] text-white'
-          }`}
-        >
-          1
-        </motion.button>
-
-        {/* Priority 2 */}
-        <motion.button
-          whileHover={{ scale: 1.12 }}
-          whileTap={{ scale: 0.88 }}
-          onClick={() => onSelectPriority(2)}
-          className={`w-13 h-13 sm:w-16 sm:h-16 rounded-full flex items-center justify-center font-black text-sm sm:text-base transition-all duration-300 shadow-md cursor-pointer ${
-            activePriority === 2
-              ? 'bg-white border-2 border-dashed border-[#503699] text-[#503699] ring-4 ring-[#503699]/20'
-              : 'bg-[#FF6E4A] text-white'
-          }`}
-        >
-          2
-        </motion.button>
-
-        {/* Priority 3 */}
-        <motion.button
-          whileHover={{ scale: 1.12 }}
-          whileTap={{ scale: 0.88 }}
-          onClick={() => onSelectPriority(3)}
-          className={`w-13 h-13 sm:w-16 sm:h-16 rounded-full flex items-center justify-center font-black text-sm sm:text-base transition-all duration-300 shadow-md cursor-pointer ${
-            activePriority === 3
-              ? 'bg-white border-2 border-dashed border-[#503699] text-[#503699] ring-4 ring-[#503699]/20'
-              : 'bg-[#F9B7A6] text-white'
-          }`}
-        >
-          3
-        </motion.button>
+      {/* --- BOTTOM CARD PAGE SELECTOR ROW (CHANGES IN LOCKSTEP WITH NEXT / PREV) --- */}
+      <div className="flex items-center justify-center gap-3 sm:gap-4 pt-4 pb-2 flex-wrap">
+        {hasTasks ? (
+          /* Render one pill for EVERY card in the priority, synced with cardIndex! */
+          priorityTasks.map((_, idx) => {
+            const isCurrentCard = cardIndex === idx;
+            return (
+              <motion.button
+                key={idx}
+                whileHover={{ scale: 1.14 }}
+                whileTap={{ scale: 0.88 }}
+                onClick={() => setCardIndex(idx)}
+                className={`w-12 h-12 sm:w-15 sm:h-15 rounded-full flex items-center justify-center font-black text-sm sm:text-base transition-all duration-300 shadow-md cursor-pointer ${
+                  isCurrentCard
+                    ? 'bg-white border-2 border-dashed border-[#503699] text-[#503699] ring-4 ring-[#503699]/25 scale-105'
+                    : 'bg-[#FF5335] text-white hover:opacity-90'
+                }`}
+                title={`Switch to Card ${idx + 1}`}
+              >
+                {idx + 1}
+              </motion.button>
+            );
+          })
+        ) : (
+          <span className="text-xs font-bold" style={{ color: subtitleColor }}>
+            No cards in Priority {activePriority}
+          </span>
+        )}
 
         {/* Add Button */}
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={openAddModal}
-          className="h-13 sm:h-16 px-6 sm:px-8 rounded-full bg-slate-900 dark:bg-white dark:text-slate-900 text-white flex items-center gap-2 font-black text-xs sm:text-sm tracking-wider uppercase shadow-xl hover:opacity-90 transition-all cursor-pointer"
+          className="h-12 sm:h-15 px-6 sm:px-7 rounded-full bg-white dark:bg-white text-[#1E1733] border border-black/10 shadow-xl flex items-center gap-2 font-black text-xs sm:text-sm tracking-wider uppercase hover:opacity-90 transition-all cursor-pointer"
         >
           <Plus size={16} />
           <span>Add</span>
