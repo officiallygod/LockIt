@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import confetti from 'canvas-confetti';
-import { Navbar } from './components/Navbar';
-import { TimerDisplay } from './components/TimerDisplay';
+import { PhoneContainer } from './components/PhoneContainer';
 import { PriorityDeck } from './components/PriorityDeck';
+import { TimerDisplay } from './components/TimerDisplay';
+import { FloatingDock } from './components/FloatingDock';
 import { StatsModal } from './components/StatsModal';
 import { SoundscapesDrawer } from './components/SoundscapesDrawer';
 import { AIStudyCompanion } from './components/AIStudyCompanion';
 import { SettingsModal } from './components/SettingsModal';
 import { CookieConsent } from './components/CookieConsent';
-import { Footer } from './components/Footer';
-import { FluidBackground } from './components/FluidBackground';
 
 import { getThemeConfig } from './theme/themeConfig';
 import { storage } from './services/storage';
@@ -33,14 +32,17 @@ export const App: React.FC = () => {
   const [stats, setStats] = useState<UserStats>(() => storage.getStats());
   const [cookieConsent, setCookieConsent] = useState<boolean>(() => storage.getCookieConsent());
 
-  // --- Timer State ---
+  // --- Screen State: 'deck' | 'timer' ---
+  const [activeScreen, setActiveScreen] = useState<'deck' | 'timer'>('deck');
   const [mode, setMode] = useState<TimerMode>('focus');
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(() => settings.focusMinutes * 60);
   const [sessionCount, setSessionCount] = useState<number>(0);
   const [activePriority, setActivePriority] = useState<TaskPriority>(1);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
-  const [intention, setIntention] = useState<string>('');
+
+  // --- Toast Notification for Cheer Pills ---
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // --- Audio & Modals State ---
   const [activeSound, setActiveSound] = useState<SoundType>('none');
@@ -52,10 +54,6 @@ export const App: React.FC = () => {
   const [isAIOpen, setIsAIOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // --- PWA Installation Event ---
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [canInstallPwa, setCanInstallPwa] = useState(false);
-
   // Sync settings helper
   const updateSettings = (newPartial: Partial<UserSettings>) => {
     setSettings((prev) => {
@@ -65,7 +63,6 @@ export const App: React.FC = () => {
     });
   };
 
-  // Dynamically resolve theme based on active theme ID & Dark/Light mode
   const theme = getThemeConfig(settings.theme, settings.isDarkMode);
 
   // Sync document dark class
@@ -92,21 +89,13 @@ export const App: React.FC = () => {
     [settings.focusMinutes, settings.shortBreakMinutes, settings.longBreakMinutes]
   );
 
-  // Switch timer mode
-  const handleModeSelect = (newMode: TimerMode) => {
-    if (settings.hapticsEnabled) soundEngine.playTickHaptic();
-    setMode(newMode);
-    setIsRunning(false);
-    setTimeLeft(getDurationForMode(newMode));
-  };
-
   // Trigger celebration confetti
   const triggerCelebration = () => {
     confetti({
       particleCount: 80,
       spread: 70,
       origin: { y: 0.65 },
-      colors: [theme.waveColor, '#FFC93C', '#34D399', '#FA5246'],
+      colors: ['#FF5335', '#4E3696', '#F8C8BA', '#C6D2FD'],
     });
   };
 
@@ -121,8 +110,8 @@ export const App: React.FC = () => {
         minutes: settings.focusMinutes,
         mode: 'focus',
         taskId: activeTask?.id,
-        taskTitle: activeTask?.title || intention || 'Deep Study Session',
-        projectName: projects.find((p) => p.id === activeTask?.projectId)?.name || 'Deep Focus',
+        taskTitle: activeTask?.title || 'Project research',
+        projectName: 'Deep Focus',
       });
       setStats(updatedStats);
 
@@ -142,18 +131,13 @@ export const App: React.FC = () => {
       const nextCount = sessionCount + 1;
       setSessionCount(nextCount);
 
-      // Switch to break
-      if (nextCount % settings.longBreakInterval === 0) {
-        setMode('longBreak');
-        setTimeLeft(settings.longBreakMinutes * 60);
-      } else {
-        setMode('shortBreak');
-        setTimeLeft(settings.shortBreakMinutes * 60);
-      }
-
+      // Switch to break mode (Screenshot 2 Right)
+      const nextBreakMode = nextCount % settings.longBreakInterval === 0 ? 'longBreak' : 'shortBreak';
+      setMode(nextBreakMode);
+      setTimeLeft(getDurationForMode(nextBreakMode));
       setIsRunning(settings.autoStartBreaks);
     } else {
-      // Break finished, return to focus
+      // Break finished, return to focus mode
       setMode('focus');
       setTimeLeft(settings.focusMinutes * 60);
       setIsRunning(settings.autoStartPomodoros);
@@ -161,16 +145,12 @@ export const App: React.FC = () => {
   }, [
     mode,
     activeTask,
-    intention,
-    projects,
     sessionCount,
     settings.focusMinutes,
-    settings.shortBreakMinutes,
-    settings.longBreakMinutes,
     settings.longBreakInterval,
     settings.autoStartBreaks,
     settings.autoStartPomodoros,
-    theme.waveColor,
+    getDurationForMode,
   ]);
 
   // Main Timer Interval Loop
@@ -191,12 +171,32 @@ export const App: React.FC = () => {
     return () => clearInterval(timer);
   }, [isRunning, handleSessionComplete]);
 
+  // Start a specific task from Priority Deck
+  const handleStartTask = (task: Task) => {
+    soundEngine.playTickHaptic();
+    setActiveTask(task);
+    setMode('focus');
+    setTimeLeft(settings.focusMinutes * 60);
+    setIsRunning(true);
+    setActiveScreen('timer');
+
+    if (activeSound !== 'none') {
+      soundEngine.playSoundscape(activeSound, soundVolume, customStreamUrl);
+    }
+  };
+
+  // Exit back to Priority Deck
+  const handleExitToDeck = () => {
+    soundEngine.playTickHaptic();
+    setIsRunning(false);
+    setActiveScreen('deck');
+  };
+
   // Handle Play/Pause
   const handleTogglePlay = () => {
-    if (settings.hapticsEnabled) soundEngine.playTickHaptic();
+    soundEngine.playTickHaptic();
     setIsRunning(!isRunning);
 
-    // Auto-resume sound if soundscape was selected
     if (!isRunning && activeSound !== 'none') {
       soundEngine.playSoundscape(activeSound, soundVolume, customStreamUrl);
     }
@@ -204,20 +204,33 @@ export const App: React.FC = () => {
 
   // Handle Reset
   const handleReset = () => {
-    if (settings.hapticsEnabled) soundEngine.playTickHaptic();
+    soundEngine.playTickHaptic();
     setIsRunning(false);
     setTimeLeft(getDurationForMode(mode));
   };
 
   // Handle Skip
   const handleSkip = () => {
-    if (settings.hapticsEnabled) soundEngine.playTickHaptic();
+    soundEngine.playTickHaptic();
     handleSessionComplete();
+  };
+
+  // Cheer Interaction (Screenshot 1)
+  const handleCheer = (message: string) => {
+    soundEngine.playTickHaptic();
+    confetti({
+      particleCount: 35,
+      spread: 50,
+      origin: { y: 0.75 },
+      colors: ['#F8C8BA', '#FF5335', '#FFFFFF'],
+    });
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(null), 2500);
   };
 
   // Handle Soundscape Change
   const handleSelectSound = (sound: SoundType) => {
-    if (settings.hapticsEnabled) soundEngine.playTickHaptic();
+    soundEngine.playTickHaptic();
     setActiveSound(sound);
     soundEngine.playSoundscape(sound, soundVolume, customStreamUrl);
   };
@@ -227,41 +240,9 @@ export const App: React.FC = () => {
     soundEngine.setVolume(vol);
   };
 
-  // PWA beforeinstallprompt Listener
-  useEffect(() => {
-    const handler = (e: any) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setCanInstallPwa(true);
-    };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
-
-  const handleInstallPwa = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setCanInstallPwa(false);
-    }
-    setDeferredPrompt(null);
-  };
-
-  // Service Worker Registration
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then(() => console.log('LockIt PWA Service Worker Registered'))
-        .catch((err) => console.warn('SW registration notice:', err));
-    }
-  }, []);
-
-  // Global Keyboard Shortcuts
+  // Keyboard Shortcuts (Space to play/pause, R to reset, S to skip, Escape to exit to deck)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if user is typing in an input or textarea
       const target = e.target as HTMLElement;
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
 
@@ -274,12 +255,15 @@ export const App: React.FC = () => {
       } else if (e.key === 's' || e.key === 'S') {
         e.preventDefault();
         handleSkip();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        handleExitToDeck();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isRunning, mode, getDurationForMode]);
+  }, [isRunning, mode, activeScreen]);
 
   // Tasks Management
   const handleAddTask = (newTaskData: Omit<Task, 'id' | 'completedPomodoros' | 'isCompleted' | 'createdAt'>) => {
@@ -295,127 +279,75 @@ export const App: React.FC = () => {
       storage.saveTasks(updated);
       return updated;
     });
-    setIntention(newTask.title);
-    setActiveTask(newTask);
   };
 
-  const handleToggleCompleteTask = (taskId: string) => {
-    if (settings.hapticsEnabled) soundEngine.playTickHaptic();
-    setTasks((prev) => {
-      const updated = prev.map((t) =>
-        t.id === taskId ? { ...t, isCompleted: !t.isCompleted } : t
-      );
-      storage.saveTasks(updated);
-      return updated;
-    });
-  };
-
-  const handleDeleteTask = (taskId: string) => {
-    setTasks((prev) => {
-      const updated = prev.filter((t) => t.id !== taskId);
-      storage.saveTasks(updated);
-      return updated;
-    });
-    if (activeTask?.id === taskId) {
-      setActiveTask(null);
+  // Service Worker Registration
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('./sw.js')
+        .catch((err) => console.warn('SW notice:', err));
     }
-  };
-
-  const handleSelectTask = (task: Task) => {
-    setActiveTask(task);
-    setIntention(task.title);
-  };
-
-  // AI Preset application
-  const handleApplyPreset = (preset: TimerPreset, minutes: number) => {
-    updateSettings({ preset, focusMinutes: minutes });
-    setTimeLeft(minutes * 60);
-    setIsRunning(false);
-    setIsAIOpen(false);
-  };
-
-  // AI Subtasks batch addition
-  const handleAddBatchSubtasks = (subtaskTitles: string[]) => {
-    const newTasksList: Task[] = subtaskTitles.map((title, i) => ({
-      id: `ai-task-${Date.now()}-${i}`,
-      title,
-      projectId: 'proj-1',
-      priority: activePriority,
-      estPomodoros: 1,
-      completedPomodoros: 0,
-      isCompleted: false,
-      createdAt: new Date().toISOString(),
-    }));
-
-    setTasks((prev) => {
-      const updated = [...newTasksList, ...prev];
-      storage.saveTasks(updated);
-      return updated;
-    });
-  };
+  }, []);
 
   const totalDuration = getDurationForMode(mode);
 
   return (
-    <div className={`relative min-h-screen flex flex-col justify-between transition-colors duration-700 ${theme.bg}`}>
-      {/* Abstract Living Fluid Background & Morphing Blobs */}
-      <FluidBackground blobColors={theme.blobColors} isDark={settings.isDarkMode} />
+    <div
+      className={`min-h-screen w-full flex items-center justify-center p-0 sm:p-6 transition-colors duration-700 relative overflow-hidden ${
+        settings.isDarkMode ? 'bg-[#120E24]' : 'bg-[#FDECE7]'
+      }`}
+    >
+      {/* Toast Notification for Interactive Cheering */}
+      {toastMessage && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-fadeIn">
+          <div className="px-5 py-2.5 rounded-full bg-black/80 text-white backdrop-blur-md shadow-2xl text-xs font-bold tracking-wide flex items-center gap-2">
+            <span>✨</span>
+            <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
 
-      {/* Top Navbar */}
-      <Navbar
-        theme={theme}
-        userName={settings.userName}
-        mode={mode}
-        isActive={isRunning}
-        isDarkMode={settings.isDarkMode}
+      {/* Main Responsive Mobile Screen Frame (Exact Proportions of Screenshots) */}
+      <PhoneContainer isDark={settings.isDarkMode}>
+        {activeScreen === 'deck' ? (
+          <PriorityDeck
+            userName={settings.userName}
+            tasks={tasks}
+            projects={projects}
+            activePriority={activePriority}
+            onSelectPriority={setActivePriority}
+            onStartTask={handleStartTask}
+            onAddTask={handleAddTask}
+            onOpenSettings={() => setIsSettingsOpen(true)}
+          />
+        ) : (
+          <TimerDisplay
+            userName={settings.userName}
+            mode={mode}
+            timeLeft={timeLeft}
+            totalDuration={totalDuration}
+            isRunning={isRunning}
+            activeTask={activeTask}
+            onTogglePlay={handleTogglePlay}
+            onReset={handleReset}
+            onSkip={handleSkip}
+            onExitToDeck={handleExitToDeck}
+            onCheer={handleCheer}
+          />
+        )}
+      </PhoneContainer>
+
+      {/* Floating Ambient Controls Dock (Sound, Stats, AI, Dark/Light, Settings) */}
+      <FloatingDock
         soundPlaying={activeSound !== 'none'}
-        onToggleDarkMode={() => updateSettings({ isDarkMode: !settings.isDarkMode })}
+        isDarkMode={settings.isDarkMode}
         onOpenSoundscapes={() => setIsSoundscapesOpen(true)}
         onOpenStats={() => setIsStatsOpen(true)}
         onOpenAI={() => setIsAIOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
-        canInstallPwa={canInstallPwa}
-        onInstallPwa={handleInstallPwa}
+        onToggleDarkMode={() => updateSettings({ isDarkMode: !settings.isDarkMode })}
       />
-
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col items-center justify-center max-w-4xl w-full mx-auto px-4 z-10">
-        {/* Giant Editorial Timer / Organic Morphing Break */}
-        <TimerDisplay
-          theme={theme}
-          userName={settings.userName}
-          mode={mode}
-          timeLeft={timeLeft}
-          totalDuration={totalDuration}
-          isRunning={isRunning}
-          sessionCount={sessionCount}
-          maxSessionsBeforeLongBreak={settings.longBreakInterval}
-          zenMode={settings.zenMode}
-          intention={intention}
-          onIntentionChange={setIntention}
-          onTogglePlay={handleTogglePlay}
-          onReset={handleReset}
-          onSkip={handleSkip}
-          onModeSelect={handleModeSelect}
-          onToggleZen={() => updateSettings({ zenMode: !settings.zenMode })}
-        />
-
-        {/* Priority Task Deck with Squishy Physics */}
-        <PriorityDeck
-          theme={theme}
-          tasks={tasks}
-          projects={projects}
-          activePriority={activePriority}
-          onSelectPriority={(p) => setActivePriority(p)}
-          onSelectTask={handleSelectTask}
-          onToggleComplete={handleToggleCompleteTask}
-          onDeleteTask={handleDeleteTask}
-          onAddTask={handleAddTask}
-        />
-      </main>
-
-      {/* Footer with Allen Benny attribution */}
-      <Footer theme={theme} />
 
       {/* Modals & Drawers */}
       <StatsModal
@@ -442,8 +374,28 @@ export const App: React.FC = () => {
         onClose={() => setIsAIOpen(false)}
         theme={theme}
         userName={settings.userName}
-        onApplyPreset={handleApplyPreset}
-        onAddSubtasks={handleAddBatchSubtasks}
+        onApplyPreset={(preset, minutes) => {
+          updateSettings({ preset, focusMinutes: minutes });
+          setTimeLeft(minutes * 60);
+          setIsAIOpen(false);
+        }}
+        onAddSubtasks={(subtaskTitles) => {
+          const newTasksList: Task[] = subtaskTitles.map((title, i) => ({
+            id: `ai-task-${Date.now()}-${i}`,
+            title,
+            projectId: 'proj-1',
+            priority: activePriority,
+            estPomodoros: 1,
+            completedPomodoros: 0,
+            isCompleted: false,
+            createdAt: new Date().toISOString(),
+          }));
+          setTasks((prev) => {
+            const updated = [...newTasksList, ...prev];
+            storage.saveTasks(updated);
+            return updated;
+          });
+        }}
       />
 
       <SettingsModal
@@ -454,7 +406,7 @@ export const App: React.FC = () => {
         onUpdateSettings={updateSettings}
       />
 
-      {/* Privacy / Cookie Consent Banner */}
+      {/* Discreet Local Storage Privacy Banner */}
       <CookieConsent
         isVisible={!cookieConsent}
         theme={theme}
