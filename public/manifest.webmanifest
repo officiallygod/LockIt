@@ -1,0 +1,19 @@
+{
+  "name": "LockIt — Deep Work & Flow Timer",
+  "short_name": "LockIt",
+  "description": "Minimalist, aesthetic, research-backed Pomodoro & Deep Work timer with fluid water physics and biophilic soundscapes. Made by Allen Benny.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF7F2",
+  "theme_color": "#C86246",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "education", "utilities"]
+}
