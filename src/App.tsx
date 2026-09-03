@@ -281,6 +281,28 @@ export const App: React.FC = () => {
     });
   };
 
+  const handleUpdateTask = (updatedTask: Task) => {
+    setTasks((prev) => {
+      const updated = prev.map((t) => (t.id === updatedTask.id ? updatedTask : t));
+      storage.saveTasks(updated);
+      return updated;
+    });
+    if (activeTask?.id === updatedTask.id) {
+      setActiveTask(updatedTask);
+    }
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    setTasks((prev) => {
+      const updated = prev.filter((t) => t.id !== taskId);
+      storage.saveTasks(updated);
+      return updated;
+    });
+    if (activeTask?.id === taskId) {
+      setActiveTask(null);
+    }
+  };
+
   // Service Worker Registration
   useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -351,6 +373,8 @@ export const App: React.FC = () => {
                 onSelectPriority={setActivePriority}
                 onStartTask={handleStartTask}
                 onAddTask={handleAddTask}
+                onUpdateTask={handleUpdateTask}
+                onDeleteTask={handleDeleteTask}
                 onOpenSettings={() => setIsSettingsOpen(true)}
               />
             </motion.div>
