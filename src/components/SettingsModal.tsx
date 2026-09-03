@@ -90,7 +90,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <div className="flex items-center gap-1.5">
                       <span
                         className="w-3.5 h-3.5 rounded-full"
-                        style={{ backgroundColor: t.waveColor }}
+                        style={{ backgroundColor: t.preview }}
                       />
                       <span className={`text-xs font-extrabold ${theme.textColor}`}>
                         {t.name.split(' (')[0]}
