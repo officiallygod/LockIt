@@ -4,6 +4,7 @@ import { X, Play, Pause, RotateCcw, SkipForward } from 'lucide-react';
 import { TimerMode, Task } from '../types';
 import { ClockTicks } from './ClockTicks';
 import { MorphingBlob } from './MorphingBlob';
+import { BoilingOceanPill } from './BoilingOceanPill';
 
 interface TimerDisplayProps {
   userName: string;
@@ -39,7 +40,7 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
 
   const taskTitle = activeTask?.title || 'Project research';
 
-  // State 2: Deep Focus Mode (Screenshot 1 & Full-screen Desktop)
+  // State 2: Deep Focus Mode with Boiling Ocean Wave Pill (Media 1–4)
   if (!isBreak) {
     return (
       <div className="w-full h-full flex flex-col justify-between max-w-5xl mx-auto px-6 sm:px-12 py-6 sm:py-10 select-none">
@@ -61,8 +62,8 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
           </div>
         </div>
 
-        {/* Motivational Greeting & Giant Timer with spacious vertical breathing room */}
-        <div className="text-center my-auto py-6 sm:py-12">
+        {/* Motivational Greeting with spacious breathing room */}
+        <div className="text-center my-auto py-4 sm:py-8">
           <p className="text-2xl sm:text-3xl md:text-4xl font-medium tracking-tight text-white/90">
             Focus on a process
           </p>
@@ -70,31 +71,37 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
             {userName}!
           </p>
 
-          {/* Giant Minimalist Timer (Screenshot 1: "0:01") */}
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={onTogglePlay}
-            className="cursor-pointer py-4 sm:py-8 md:py-12 my-2 flex items-center justify-center select-none"
-            title="Click anywhere on time to Pause / Resume"
-          >
-            <span className="text-8xl sm:text-9xl md:text-[11rem] lg:text-[12rem] font-bold font-sans tracking-tight text-white drop-shadow-sm leading-none">
-              {minutes}:{String(seconds).padStart(2, '0')}
-            </span>
-          </motion.div>
-
-          {/* Curved Clock Tick Marks (Screenshot 1) */}
-          <div className="w-full flex justify-center -mt-2 sm:-mt-4 mb-6 sm:mb-8">
+          {/* Radial Curved Dial with Center Red/Coral Indicator Dot (Media 1–3) */}
+          <div className="relative w-full flex flex-col items-center justify-center mt-4 sm:mt-6 mb-2">
+            {/* Center glowing indicator dot (Media 1–3) */}
+            <motion.div
+              animate={{ scale: [1, 1.3, 1], opacity: [0.85, 1, 0.85] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              className="w-3.5 h-3.5 rounded-full bg-[#FF5335] shadow-[0_0_12px_#FF5335] mb-1"
+            />
+            {/* Radial ticks arch */}
             <ClockTicks progress={progress} color="#FFFFFF" />
           </div>
 
+          {/* Floating Ocean Wave Capsule Pill with Boiling Bubbles (Media 1–4) */}
+          <div className="w-full flex justify-center my-2 sm:my-4">
+            <BoilingOceanPill
+              minutes={minutes}
+              seconds={seconds}
+              isRunning={isRunning}
+              color="#FF5335"
+              onTogglePlay={onTogglePlay}
+              onReset={onReset}
+            />
+          </div>
+
           {/* Cheering Pills with comfortable padding (Screenshot 1) */}
-          <div className="flex flex-col items-center gap-3 sm:gap-4 mt-2">
+          <div className="flex flex-col items-center gap-3 sm:gap-3.5 mt-4 sm:mt-6">
             <motion.button
               whileHover={{ scale: 1.06 }}
               whileTap={{ scale: 0.92 }}
               onClick={() => onCheer(`Come on, ${userName}! You've got this! 🤗`)}
-              className="px-8 sm:px-10 py-3 sm:py-3.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md text-sm sm:text-base font-semibold text-white shadow-md transition-all border border-white/15"
+              className="px-8 sm:px-10 py-3 sm:py-3.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md text-sm sm:text-base font-semibold text-white shadow-md transition-all border border-white/15 cursor-pointer"
             >
               Come on, {userName} 🤗
             </motion.button>
@@ -103,7 +110,7 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
               whileHover={{ scale: 1.06 }}
               whileTap={{ scale: 0.92 }}
               onClick={() => onCheer(`Step on it, ${userName}! Pure flow momentum! 💪`)}
-              className="px-5 py-1.5 rounded-full text-xs sm:text-sm font-medium text-white/50 hover:text-white/90 transition-all"
+              className="px-5 py-1.5 rounded-full text-xs sm:text-sm font-medium text-white/50 hover:text-white/90 transition-all cursor-pointer"
             >
               Step on it! 💪
             </motion.button>
