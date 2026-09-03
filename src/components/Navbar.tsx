@@ -65,7 +65,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           transition={{ type: 'spring', stiffness: 400, damping: 17 }}
           className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-white/80 shadow-md border border-black/5 dark:bg-white/10 dark:border-white/10 backdrop-blur-md overflow-hidden cursor-pointer"
         >
-          <img src="/logo.svg" alt="LockIt" className="w-7 h-7 object-contain" />
+          <img src="./logo.svg" alt="LockIt" className="w-7 h-7 object-contain" />
         </motion.div>
         <div>
           <div className="flex items-center gap-2">
