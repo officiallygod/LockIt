@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import { Navbar } from './components/Navbar';
 import { TimerDisplay } from './components/TimerDisplay';
@@ -9,8 +9,9 @@ import { AIStudyCompanion } from './components/AIStudyCompanion';
 import { SettingsModal } from './components/SettingsModal';
 import { CookieConsent } from './components/CookieConsent';
 import { Footer } from './components/Footer';
+import { FluidBackground } from './components/FluidBackground';
 
-import { THEMES } from './theme/themeConfig';
+import { getThemeConfig } from './theme/themeConfig';
 import { storage } from './services/storage';
 import { soundEngine } from './services/soundEngine';
 import { 
@@ -64,7 +65,17 @@ export const App: React.FC = () => {
     });
   };
 
-  const theme = THEMES[settings.theme] || THEMES.terracotta;
+  // Dynamically resolve theme based on active theme ID & Dark/Light mode
+  const theme = getThemeConfig(settings.theme, settings.isDarkMode);
+
+  // Sync document dark class
+  useEffect(() => {
+    if (settings.isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [settings.isDarkMode]);
 
   // Calculate current mode duration in seconds
   const getDurationForMode = useCallback(
@@ -346,14 +357,19 @@ export const App: React.FC = () => {
   const totalDuration = getDurationForMode(mode);
 
   return (
-    <div className={`min-h-screen flex flex-col justify-between transition-colors duration-500 ${theme.bg}`}>
+    <div className={`relative min-h-screen flex flex-col justify-between transition-colors duration-700 ${theme.bg}`}>
+      {/* Abstract Living Fluid Background & Morphing Blobs */}
+      <FluidBackground blobColors={theme.blobColors} isDark={settings.isDarkMode} />
+
       {/* Top Navbar */}
       <Navbar
         theme={theme}
         userName={settings.userName}
         mode={mode}
         isActive={isRunning}
+        isDarkMode={settings.isDarkMode}
         soundPlaying={activeSound !== 'none'}
+        onToggleDarkMode={() => updateSettings({ isDarkMode: !settings.isDarkMode })}
         onOpenSoundscapes={() => setIsSoundscapesOpen(true)}
         onOpenStats={() => setIsStatsOpen(true)}
         onOpenAI={() => setIsAIOpen(true)}
@@ -363,8 +379,8 @@ export const App: React.FC = () => {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col items-center justify-center max-w-4xl w-full mx-auto px-4">
-        {/* Giant Editorial Timer */}
+      <main className="flex-1 flex flex-col items-center justify-center max-w-4xl w-full mx-auto px-4 z-10">
+        {/* Giant Editorial Timer / Organic Morphing Break */}
         <TimerDisplay
           theme={theme}
           userName={settings.userName}
@@ -384,7 +400,7 @@ export const App: React.FC = () => {
           onToggleZen={() => updateSettings({ zenMode: !settings.zenMode })}
         />
 
-        {/* Priority Task Deck (from reference mockups) */}
+        {/* Priority Task Deck with Squishy Physics */}
         <PriorityDeck
           theme={theme}
           tasks={tasks}
@@ -398,7 +414,7 @@ export const App: React.FC = () => {
         />
       </main>
 
-      {/* Footer */}
+      {/* Footer with Allen Benny attribution */}
       <Footer theme={theme} />
 
       {/* Modals & Drawers */}

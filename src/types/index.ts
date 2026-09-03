@@ -66,6 +66,7 @@ export interface SoundPreset {
 export interface UserSettings {
   userName: string;
   theme: ThemeId;
+  isDarkMode: boolean;
   preset: TimerPreset;
   focusMinutes: number;
   shortBreakMinutes: number;

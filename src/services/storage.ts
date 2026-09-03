@@ -51,6 +51,7 @@ export const DEFAULT_TASKS: Task[] = [
 export const DEFAULT_SETTINGS: UserSettings = {
   userName: 'Allen',
   theme: 'terracotta',
+  isDarkMode: false,
   preset: 'classic',
   focusMinutes: 25,
   shortBreakMinutes: 5,

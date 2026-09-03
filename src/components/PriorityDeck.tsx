@@ -63,53 +63,58 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
             Rank your tasks to lock in without distraction
           </p>
         </div>
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setIsModalOpen(true)}
-          className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full ${theme.primary} ${theme.primaryText} hover:scale-105 active:scale-95 transition-all shadow-sm`}
+          className={`flex items-center gap-1.5 text-xs font-black px-3.5 py-2 rounded-full ${theme.primary} ${theme.primaryText} transition-all shadow-md`}
         >
           <Plus size={14} />
           <span>New Task</span>
-        </button>
+        </motion.button>
       </div>
 
-      {/* Cards Carousel / Stack */}
-      <div className="relative min-h-[220px] mb-6 flex flex-col justify-center">
+      {/* Cards Carousel / Stack with Spring Physics */}
+      <div className="relative min-h-[200px] mb-6 flex flex-col justify-center">
         <AnimatePresence mode="wait">
           {currentTasks.length === 0 ? (
             <motion.div
               key="empty-priority"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className={`w-full rounded-3xl p-6 text-center border border-dashed flex flex-col items-center justify-center gap-3 ${theme.cardBorder} bg-black/5 dark:bg-white/5`}
+              initial={{ opacity: 0, y: 12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -12, scale: 0.98 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+              className={`w-full rounded-[32px] p-7 text-center border-2 border-dashed flex flex-col items-center justify-center gap-3 backdrop-blur-md ${theme.cardBorder} bg-black/5 dark:bg-white/5`}
             >
-              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-black/5 dark:bg-white/10 text-2xl">
-                ✨
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-black/5 dark:bg-white/10 text-2xl shadow-inner">
+                🎯
               </div>
               <div>
-                <p className={`text-sm font-bold ${theme.textColor}`}>
+                <p className={`text-sm font-black ${theme.textColor}`}>
                   No tasks for Priority {activePriority}
                 </p>
                 <p className={`text-xs ${theme.textMuted} mt-0.5`}>
                   Add a high-impact goal to conquer this session
                 </p>
               </div>
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => {
                   setNewPriority(activePriority);
                   setIsModalOpen(true);
                 }}
-                className={`text-xs font-bold px-4 py-2 rounded-full ${theme.primary} ${theme.primaryText} hover:scale-105 active:scale-95 transition-all`}
+                className={`text-xs font-black px-4 py-2 rounded-full ${theme.primary} ${theme.primaryText} shadow-md`}
               >
                 + Add Priority {activePriority}
-              </button>
+              </motion.button>
             </motion.div>
           ) : (
             <motion.div
               key={`priority-${activePriority}`}
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              exit={{ opacity: 0, scale: 0.94 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
               className="space-y-3"
             >
@@ -120,26 +125,28 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
                   <motion.div
                     key={task.id}
                     layout
-                    className={`group relative rounded-3xl p-5 border transition-all duration-300 shadow-md flex items-center justify-between gap-4 ${
-                      task.isCompleted ? 'opacity-60 bg-black/5' : theme.cardBg
+                    whileHover={{ scale: 1.015, y: -2 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                    className={`group relative rounded-[28px] p-5 border transition-all duration-300 shadow-lg flex items-center justify-between gap-4 backdrop-blur-xl ${
+                      task.isCompleted ? 'opacity-50 bg-black/5' : theme.cardBg
                     } ${theme.cardBorder}`}
                   >
                     {/* Task Content */}
                     <div
                       onClick={() => onSelectTask(task)}
-                      className="flex-1 cursor-pointer"
+                      className="flex-1 cursor-pointer select-none"
                     >
                       <div className="flex items-center gap-2 mb-1.5">
                         <span
-                          className="text-[10px] font-bold px-2.5 py-0.5 rounded-full"
+                          className="text-[10px] font-black px-2.5 py-0.5 rounded-full"
                           style={{
-                            backgroundColor: project ? `${project.color}20` : '#E07A5F20',
+                            backgroundColor: project ? `${project.color}25` : '#E07A5F25',
                             color: project ? project.color : '#E07A5F',
                           }}
                         >
                           {project ? `${project.badge} ${project.name}` : 'Priority Focus'}
                         </span>
-                        <span className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground opacity-70">
+                        <span className="flex items-center gap-1 text-[11px] font-bold text-muted-foreground opacity-80">
                           <Clock size={11} />
                           <span>
                             {task.completedPomodoros}/{task.estPomodoros} pomos
@@ -148,7 +155,7 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
                       </div>
 
                       <h3
-                        className={`text-base font-extrabold tracking-tight transition-all ${
+                        className={`text-base font-black tracking-tight transition-all ${
                           task.isCompleted ? 'line-through opacity-70' : theme.textColor
                         }`}
                       >
@@ -158,25 +165,29 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
 
                     {/* Check & Delete buttons */}
                     <div className="flex items-center gap-1.5">
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.85 }}
                         onClick={() => onToggleComplete(task.id)}
                         className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all ${
                           task.isCompleted
-                            ? 'bg-emerald-500 border-emerald-500 text-white'
-                            : 'border-black/15 dark:border-white/15 hover:border-emerald-500 text-transparent hover:text-emerald-500'
+                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-md'
+                            : 'border-black/15 dark:border-white/20 hover:border-emerald-500 text-transparent hover:text-emerald-500'
                         }`}
                         title={task.isCompleted ? 'Mark incomplete' : 'Mark complete'}
                       >
                         <Check size={16} className={task.isCompleted ? 'stroke-[3]' : ''} />
-                      </button>
+                      </motion.button>
 
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.85 }}
                         onClick={() => onDeleteTask(task.id)}
                         className="w-9 h-9 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-60 hover:!opacity-100 hover:text-rose-500 transition-all"
                         title="Delete task"
                       >
                         <Trash2 size={15} />
-                      </button>
+                      </motion.button>
                     </div>
                   </motion.div>
                 );
@@ -186,43 +197,49 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
         </AnimatePresence>
       </div>
 
-      {/* Priority Selector Pills: 1, 2, 3, Add (Exact match to Mockup 3, 4, 5) */}
+      {/* Priority Selector Pills: 1, 2, 3, Add (Tactile Squishy Bouncy Buttons) */}
       <div className="flex items-center justify-center gap-3">
         {[1, 2, 3].map((pNum) => {
           const isSelected = activePriority === pNum;
           return (
-            <button
+            <motion.button
               key={pNum}
+              whileHover={{ scale: 1.12 }}
+              whileTap={{ scale: 0.88 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 20 }}
               onClick={() => onSelectPriority(pNum as TaskPriority)}
-              className={`w-12 h-12 rounded-full font-black text-sm transition-all duration-300 flex items-center justify-center shadow-sm ${
+              className={`w-13 h-13 rounded-full font-black text-sm transition-all duration-300 flex items-center justify-center shadow-md ${
                 isSelected
-                  ? `${theme.primary} ${theme.primaryText} scale-110 ring-4 ring-black/5`
-                  : 'bg-black/5 dark:bg-white/10 text-muted-foreground hover:scale-105'
+                  ? `${theme.primary} ${theme.primaryText} scale-110 ring-4 ring-black/5 dark:ring-white/10`
+                  : 'bg-black/5 dark:bg-white/10 text-muted-foreground hover:opacity-80'
               }`}
             >
               {pNum}
-            </button>
+            </motion.button>
           );
         })}
 
         {/* Add button pill */}
-        <button
+        <motion.button
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.9 }}
+          transition={{ type: 'spring', stiffness: 450, damping: 20 }}
           onClick={() => setIsModalOpen(true)}
-          className={`h-12 px-5 rounded-full font-bold text-xs tracking-wide transition-all duration-300 flex items-center gap-1.5 shadow-sm ${theme.pillBg} ${theme.pillText} hover:scale-105 active:scale-95`}
+          className={`h-13 px-5 rounded-full font-black text-xs tracking-wider uppercase transition-all duration-300 flex items-center gap-1.5 shadow-md ${theme.pillBg} ${theme.pillText}`}
         >
-          <Plus size={14} />
+          <Plus size={15} />
           <span>Add</span>
-        </button>
+        </motion.button>
       </div>
 
       {/* New Task Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fadeIn">
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className={`w-full max-w-sm rounded-[32px] p-6 shadow-2xl border ${theme.cardBg} ${theme.cardBorder}`}
+            initial={{ opacity: 0, scale: 0.9, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 15 }}
+            className={`w-full max-w-sm rounded-[36px] p-7 shadow-2xl border ${theme.cardBg} ${theme.cardBorder}`}
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className={`text-lg font-black ${theme.textColor}`}>Create High-Impact Task</h3>
@@ -236,7 +253,7 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
 
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className={`block text-xs font-bold mb-1 ${theme.textMuted}`}>
+                <label className={`block text-xs font-bold mb-1.5 ${theme.textMuted}`}>
                   Task Name
                 </label>
                 <input
@@ -245,13 +262,13 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
                   placeholder="e.g. Read Research Paper Section 3"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className={`w-full px-4 py-2.5 rounded-2xl border bg-black/5 dark:bg-white/10 ${theme.cardBorder} outline-none focus:ring-2 focus:ring-terracotta text-sm ${theme.textColor}`}
+                  className={`w-full px-4 py-3 rounded-2xl border bg-black/5 dark:bg-white/10 ${theme.cardBorder} outline-none focus:ring-2 focus:ring-terracotta text-sm font-bold ${theme.textColor}`}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={`block text-xs font-bold mb-1 ${theme.textMuted}`}>
+                  <label className={`block text-xs font-bold mb-1.5 ${theme.textMuted}`}>
                     Priority
                   </label>
                   <select
@@ -266,7 +283,7 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
                 </div>
 
                 <div>
-                  <label className={`block text-xs font-bold mb-1 ${theme.textMuted}`}>
+                  <label className={`block text-xs font-bold mb-1.5 ${theme.textMuted}`}>
                     Est. Sessions
                   </label>
                   <input
@@ -281,7 +298,7 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
               </div>
 
               <div>
-                <label className={`block text-xs font-bold mb-1 ${theme.textMuted}`}>
+                <label className={`block text-xs font-bold mb-1.5 ${theme.textMuted}`}>
                   Category / Project
                 </label>
                 <select
@@ -301,13 +318,13 @@ export const PriorityDeck: React.FC<PriorityDeckProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-2.5 rounded-2xl text-xs font-bold bg-black/5 dark:bg-white/10 hover:opacity-80 transition-all text-muted-foreground"
+                  className="flex-1 py-3 rounded-2xl text-xs font-bold bg-black/5 dark:bg-white/10 hover:opacity-80 transition-all text-muted-foreground"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className={`flex-1 py-2.5 rounded-2xl text-xs font-extrabold ${theme.primary} ${theme.primaryText} hover:scale-105 active:scale-95 transition-all shadow-md`}
+                  className={`flex-1 py-3 rounded-2xl text-xs font-black ${theme.primary} ${theme.primaryText} hover:scale-102 active:scale-98 transition-all shadow-md`}
                 >
                   Create Task
                 </button>

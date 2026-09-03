@@ -154,6 +154,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="space-y-3 pt-2 border-t border-black/5 dark:border-white/10">
             <div className="flex items-center justify-between">
               <div>
+                <span className={`text-xs font-bold block ${theme.textColor}`}>Midnight Dark Mode</span>
+                <span className="text-[11px] text-muted-foreground">OLED black background & glowing accents</span>
+              </div>
+              <input
+                type="checkbox"
+                checked={settings.isDarkMode}
+                onChange={(e) => onUpdateSettings({ isDarkMode: e.target.checked })}
+                className="w-5 h-5 rounded-md accent-[#C86246] cursor-pointer"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
                 <span className={`text-xs font-bold block ${theme.textColor}`}>Zen Mode Default</span>
                 <span className="text-[11px] text-muted-foreground">Hide ticking seconds for anxiety-free flow</span>
               </div>
