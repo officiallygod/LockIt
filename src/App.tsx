@@ -10,6 +10,7 @@ import { AIStudyCompanion } from './components/AIStudyCompanion';
 import { SettingsModal } from './components/SettingsModal';
 import { CookieConsent } from './components/CookieConsent';
 import { WaterWave } from './components/WaterWave';
+import { GooeyFilter } from './components/GooeyFilter';
 
 import { getThemeConfig } from './theme/themeConfig';
 import { storage } from './services/storage';
@@ -332,6 +333,9 @@ export const App: React.FC = () => {
     <div
       className={`min-h-screen w-full flex flex-col justify-between transition-colors duration-700 relative overflow-x-hidden ${getScreenBg()}`}
     >
+      {/* Aaron Iker Liquid Gooey & Water Caustics Filters */}
+      <GooeyFilter />
+
       {/* Real-time Full-Screen Ambient Fluid Wave Layer (Focus Mode) */}
       {isFocusMode && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-25 z-0">

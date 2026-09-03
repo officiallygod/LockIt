@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Pause, Square } from 'lucide-react';
+import { Play, Pause } from 'lucide-react';
 
 interface BoilingOceanPillProps {
   minutes: number;
@@ -26,7 +26,7 @@ export const BoilingOceanPill: React.FC<BoilingOceanPillProps> = ({
   minutes,
   seconds,
   isRunning,
-  color = '#FF6B4A',
+  color = '#FF5335',
   onTogglePlay,
   onReset,
 }) => {
@@ -61,18 +61,18 @@ export const BoilingOceanPill: React.FC<BoilingOceanPillProps> = ({
     window.addEventListener('resize', resize);
 
     // Initialize boiling bubbles particle system (Media 1–3)
-    const bubbleCount = 28;
+    const bubbleCount = 32;
     const bubbles: Bubble[] = [];
 
     const spawnBubble = (width: number, height: number): Bubble => ({
-      x: 20 + Math.random() * (width - 40),
-      y: height - 6 - Math.random() * 20,
+      x: 18 + Math.random() * (width - 36),
+      y: height - 4 - Math.random() * 24,
       radius: 2 + Math.random() * 4.5,
-      speedY: 0.9 + Math.random() * 1.8,
-      wobbleSpeed: 0.04 + Math.random() * 0.06,
-      wobbleAmp: 1.5 + Math.random() * 2.5,
+      speedY: 1.0 + Math.random() * 2.0,
+      wobbleSpeed: 0.04 + Math.random() * 0.07,
+      wobbleAmp: 1.5 + Math.random() * 3.0,
       phase: Math.random() * Math.PI * 2,
-      opacity: 0.35 + Math.random() * 0.5,
+      opacity: 0.35 + Math.random() * 0.55,
     });
 
     const render = () => {
@@ -82,11 +82,11 @@ export const BoilingOceanPill: React.FC<BoilingOceanPillProps> = ({
 
       ctx.clearRect(0, 0, width, height);
 
-      // Advance ocean wave phase continuously (never stops, tranquil when paused)
-      step += isRunningRef.current ? 0.038 : 0.022;
+      // Continuous ocean wave propagation
+      step += isRunningRef.current ? 0.042 : 0.024;
 
-      // Base water surface line (approx 35% from top, filling bottom 65% of the pill like Media 4)
-      const waterY = height * 0.32;
+      // Base water surface level (~34% from top, filling bottom 66% of the pill)
+      const waterY = height * 0.34;
       const themeCol = colorRef.current;
 
       // --- Layer 1: Background Softer Ocean Wave ---
@@ -94,13 +94,13 @@ export const BoilingOceanPill: React.FC<BoilingOceanPillProps> = ({
       ctx.beginPath();
       ctx.moveTo(0, height);
       for (let x = 0; x <= width; x += 4) {
-        const y = Math.sin(x * 0.016 + step * 0.8) * 8 + Math.cos(x * 0.01 - step * 0.4) * 4 + waterY;
+        const y = Math.sin(x * 0.015 + step * 0.82) * 8 + Math.cos(x * 0.009 - step * 0.42) * 4 + waterY;
         ctx.lineTo(x, y);
       }
       ctx.lineTo(width, height);
       ctx.closePath();
       ctx.fillStyle = themeCol;
-      ctx.globalAlpha = 0.55;
+      ctx.globalAlpha = 0.52;
       ctx.fill();
       ctx.restore();
 
@@ -109,13 +109,13 @@ export const BoilingOceanPill: React.FC<BoilingOceanPillProps> = ({
       ctx.beginPath();
       ctx.moveTo(0, height);
       for (let x = 0; x <= width; x += 4) {
-        const y = Math.sin(x * 0.022 + step) * 10 + Math.cos(x * 0.014 + step * 0.7) * 5 + waterY;
+        const y = Math.sin(x * 0.02 + step) * 10 + Math.cos(x * 0.013 + step * 0.68) * 5 + waterY;
         ctx.lineTo(x, y);
       }
       ctx.lineTo(width, height);
       ctx.closePath();
       ctx.fillStyle = themeCol;
-      ctx.globalAlpha = 0.92;
+      ctx.globalAlpha = 0.94;
       ctx.fill();
       ctx.restore();
 
@@ -123,46 +123,60 @@ export const BoilingOceanPill: React.FC<BoilingOceanPillProps> = ({
       ctx.save();
       ctx.beginPath();
       for (let x = 0; x <= width; x += 4) {
-        const y = Math.sin(x * 0.022 + step) * 10 + Math.cos(x * 0.014 + step * 0.7) * 5 + waterY;
+        const y = Math.sin(x * 0.02 + step) * 10 + Math.cos(x * 0.013 + step * 0.68) * 5 + waterY;
         if (x === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
       ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 2.5;
-      ctx.globalAlpha = 0.85;
+      ctx.lineWidth = 2.8;
+      ctx.globalAlpha = 0.88;
       ctx.stroke();
       ctx.restore();
 
-      // --- Layer 4: Boiling Bubbles Particle System (Media 1–3) ---
+      // --- Layer 4: Boiling Water Bubbles System (Media 1–3) ---
       while (bubbles.length < bubbleCount) {
         bubbles.push(spawnBubble(width, height));
       }
 
       ctx.save();
       bubbles.forEach((b, idx) => {
-        // Calculate current wave surface height at bubble's X
-        const surfaceAtX = Math.sin(b.x * 0.022 + step) * 10 + Math.cos(b.x * 0.014 + step * 0.7) * 5 + waterY;
+        const surfaceAtX = Math.sin(b.x * 0.02 + step) * 10 + Math.cos(b.x * 0.013 + step * 0.68) * 5 + waterY;
 
         // Rise upwards with buoyancy
-        b.y -= b.speedY * (isRunningRef.current ? 1.2 : 0.8);
+        b.y -= b.speedY * (isRunningRef.current ? 1.3 : 0.85);
         b.phase += b.wobbleSpeed;
         const currentX = b.x + Math.sin(b.phase) * b.wobbleAmp;
 
-        // Draw translucent boiling bubble with white rim
+        // Translucent boiling bubble with white rim
         ctx.beginPath();
         ctx.arc(currentX, b.y, b.radius, 0, Math.PI * 2);
         ctx.strokeStyle = '#FFFFFF';
         ctx.lineWidth = 1.2;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
         ctx.globalAlpha = b.opacity;
         ctx.fill();
         ctx.stroke();
 
-        // Bubble burst at the ocean surface and respawn at bottom
+        // Bubble burst at ocean surface and respawn at bottom
         if (b.y <= surfaceAtX + b.radius || b.y < 0) {
           bubbles[idx] = spawnBubble(width, height);
         }
       });
+      ctx.restore();
+
+      // --- Layer 5: Cute Floating Rubber Duck / Buoy (Image 2 Inspired) ---
+      const duckX = width * 0.76;
+      const duckWaveY = Math.sin(duckX * 0.02 + step) * 10 + Math.cos(duckX * 0.013 + step * 0.68) * 5 + waterY;
+      const duckTilt = Math.cos(duckX * 0.02 + step) * 0.18;
+
+      ctx.save();
+      ctx.translate(duckX, duckWaveY - 4);
+      ctx.rotate(duckTilt);
+      // Draw small yellow rubber duck / buoy
+      ctx.font = '16px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🐤', 0, 0);
       ctx.restore();
 
       animId = requestAnimationFrame(render);
@@ -181,17 +195,17 @@ export const BoilingOceanPill: React.FC<BoilingOceanPillProps> = ({
       {/* Floating Ocean Wave Capsule Pill with Buoy Physics (Media 4) */}
       <motion.div
         animate={{
-          y: [-5, 5, -5],
+          y: [-6, 6, -6],
           rotate: [-1.2, 1.2, -1.2],
         }}
         transition={{
-          duration: 6,
+          duration: 5.5,
           repeat: Infinity,
           ease: 'easeInOut',
         }}
-        className="relative w-76 sm:w-96 md:w-[440px] h-22 sm:h-26 md:h-28 rounded-full overflow-hidden border-4 border-white/90 dark:border-white/30 shadow-2xl backdrop-blur-xl bg-white/20 dark:bg-black/20 flex items-center justify-between px-6 sm:px-8 cursor-pointer active:scale-98 transition-transform"
+        className="relative w-80 sm:w-96 md:w-[460px] h-24 sm:h-28 md:h-30 rounded-full overflow-hidden border-4 border-white/95 dark:border-white/30 shadow-2xl backdrop-blur-xl bg-white/20 dark:bg-black/30 flex items-center justify-between px-6 sm:px-9 cursor-pointer active:scale-98 transition-transform"
         style={{
-          boxShadow: '0 20px 50px -10px rgba(255, 107, 74, 0.35), 0 8px 20px -5px rgba(0,0,0,0.1)',
+          boxShadow: '0 24px 60px -12px rgba(255, 83, 53, 0.4), 0 10px 24px -6px rgba(0,0,0,0.12)',
         }}
       >
         {/* Real-time Canvas Rendering Ocean Waves + Boiling Bubbles */}
@@ -203,22 +217,22 @@ export const BoilingOceanPill: React.FC<BoilingOceanPillProps> = ({
         {/* --- Inner Controls: Left Pause/Play ||, Center Time 05:43, Right Stop □ (Media 4) --- */}
         {/* Left: Pause / Play icon */}
         <motion.button
-          whileHover={{ scale: 1.2 }}
+          whileHover={{ scale: 1.22 }}
           whileTap={{ scale: 0.85 }}
           onClick={(e) => {
             e.stopPropagation();
             onTogglePlay();
           }}
-          className="relative z-10 w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all cursor-pointer shadow-sm"
+          className="relative z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all cursor-pointer shadow-md"
           title={isRunning ? 'Pause' : 'Play'}
         >
           {isRunning ? (
-            <div className="flex items-center gap-1">
-              <span className="w-1.5 h-5 rounded-full bg-white block shadow-sm" />
-              <span className="w-1.5 h-5 rounded-full bg-white block shadow-sm" />
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-5 sm:h-6 rounded-full bg-white block shadow-md" />
+              <span className="w-1.5 h-5 sm:h-6 rounded-full bg-white block shadow-md" />
             </div>
           ) : (
-            <Play size={22} className="fill-white text-white ml-0.5" />
+            <Play size={24} className="fill-white text-white ml-0.5" />
           )}
         </motion.button>
 
@@ -227,23 +241,23 @@ export const BoilingOceanPill: React.FC<BoilingOceanPillProps> = ({
           onClick={onTogglePlay}
           className="relative z-10 text-center flex items-center justify-center cursor-pointer select-none"
         >
-          <span className="text-4xl sm:text-5xl md:text-6xl font-black font-sans tracking-tight text-white drop-shadow-md leading-none">
+          <span className="text-4xl sm:text-5xl md:text-6xl font-black font-sans tracking-tight text-white drop-shadow-lg leading-none">
             {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
           </span>
         </div>
 
         {/* Right: Stop / Reset Square icon □ (Media 4) */}
         <motion.button
-          whileHover={{ scale: 1.2 }}
+          whileHover={{ scale: 1.22 }}
           whileTap={{ scale: 0.85 }}
           onClick={(e) => {
             e.stopPropagation();
             onReset();
           }}
-          className="relative z-10 w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all cursor-pointer shadow-sm"
+          className="relative z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all cursor-pointer shadow-md"
           title="Stop / Reset"
         >
-          <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-md border-2 border-white bg-transparent flex items-center justify-center shadow-sm" />
+          <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-md border-2 border-white bg-transparent flex items-center justify-center shadow-md" />
         </motion.button>
       </motion.div>
     </div>
