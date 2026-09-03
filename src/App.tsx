@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { PhoneContainer } from './components/PhoneContainer';
 import { PriorityDeck } from './components/PriorityDeck';
 import { TimerDisplay } from './components/TimerDisplay';
 import { FloatingDock } from './components/FloatingDock';
@@ -9,6 +9,7 @@ import { SoundscapesDrawer } from './components/SoundscapesDrawer';
 import { AIStudyCompanion } from './components/AIStudyCompanion';
 import { SettingsModal } from './components/SettingsModal';
 import { CookieConsent } from './components/CookieConsent';
+import { WaterWave } from './components/WaterWave';
 
 import { getThemeConfig } from './theme/themeConfig';
 import { storage } from './services/storage';
@@ -20,8 +21,7 @@ import {
   TaskPriority, 
   UserSettings, 
   UserStats, 
-  SoundType, 
-  TimerPreset 
+  SoundType 
 } from './types';
 
 export const App: React.FC = () => {
@@ -131,7 +131,7 @@ export const App: React.FC = () => {
       const nextCount = sessionCount + 1;
       setSessionCount(nextCount);
 
-      // Switch to break mode (Screenshot 2 Right)
+      // Switch to break mode
       const nextBreakMode = nextCount % settings.longBreakInterval === 0 ? 'longBreak' : 'shortBreak';
       setMode(nextBreakMode);
       setTimeLeft(getDurationForMode(nextBreakMode));
@@ -219,8 +219,8 @@ export const App: React.FC = () => {
   const handleCheer = (message: string) => {
     soundEngine.playTickHaptic();
     confetti({
-      particleCount: 35,
-      spread: 50,
+      particleCount: 40,
+      spread: 60,
       origin: { y: 0.75 },
       colors: ['#F8C8BA', '#FF5335', '#FFFFFF'],
     });
@@ -240,7 +240,7 @@ export const App: React.FC = () => {
     soundEngine.setVolume(vol);
   };
 
-  // Keyboard Shortcuts (Space to play/pause, R to reset, S to skip, Escape to exit to deck)
+  // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -291,54 +291,97 @@ export const App: React.FC = () => {
   }, []);
 
   const totalDuration = getDurationForMode(mode);
+  const isFocusMode = activeScreen === 'timer' && mode === 'focus';
+  const isBreakMode = activeScreen === 'timer' && mode !== 'focus';
+
+  // Dynamic Full-Screen Background based on Active Screen
+  const getScreenBg = () => {
+    if (isFocusMode) {
+      return 'bg-gradient-to-b from-[#4E3696] to-[#3B2479] text-white';
+    }
+    if (isBreakMode) {
+      return settings.isDarkMode ? 'bg-[#1A1429] text-white' : 'bg-[#FFFFFF] text-[#251E35]';
+    }
+    // Deck screen
+    return settings.isDarkMode ? 'bg-[#120E24] text-white' : 'bg-[#FDECE7] text-[#251E35]';
+  };
 
   return (
     <div
-      className={`min-h-screen w-full flex items-center justify-center p-0 sm:p-6 transition-colors duration-700 relative overflow-hidden ${
-        settings.isDarkMode ? 'bg-[#120E24]' : 'bg-[#FDECE7]'
-      }`}
+      className={`min-h-screen w-full flex flex-col justify-between transition-colors duration-700 relative overflow-x-hidden ${getScreenBg()}`}
     >
+      {/* Real-time Full-Screen Ambient Fluid Wave Layer (Focus Mode) */}
+      {isFocusMode && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-25 z-0">
+          <WaterWave
+            progress={totalDuration > 0 ? (totalDuration - timeLeft) / totalDuration : 0}
+            color="#FFFFFF"
+            isPaused={!isRunning}
+          />
+        </div>
+      )}
+
       {/* Toast Notification for Interactive Cheering */}
       {toastMessage && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-fadeIn">
-          <div className="px-5 py-2.5 rounded-full bg-black/80 text-white backdrop-blur-md shadow-2xl text-xs font-bold tracking-wide flex items-center gap-2">
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 animate-fadeIn pointer-events-none">
+          <div className="px-6 py-3 rounded-full bg-black/85 text-white backdrop-blur-md shadow-2xl text-xs sm:text-sm font-bold tracking-wide flex items-center gap-2 border border-white/10">
             <span>✨</span>
             <span>{toastMessage}</span>
           </div>
         </div>
       )}
 
-      {/* Main Responsive Mobile Screen Frame (Exact Proportions of Screenshots) */}
-      <PhoneContainer isDark={settings.isDarkMode}>
-        {activeScreen === 'deck' ? (
-          <PriorityDeck
-            userName={settings.userName}
-            tasks={tasks}
-            projects={projects}
-            activePriority={activePriority}
-            onSelectPriority={setActivePriority}
-            onStartTask={handleStartTask}
-            onAddTask={handleAddTask}
-            onOpenSettings={() => setIsSettingsOpen(true)}
-          />
-        ) : (
-          <TimerDisplay
-            userName={settings.userName}
-            mode={mode}
-            timeLeft={timeLeft}
-            totalDuration={totalDuration}
-            isRunning={isRunning}
-            activeTask={activeTask}
-            onTogglePlay={handleTogglePlay}
-            onReset={handleReset}
-            onSkip={handleSkip}
-            onExitToDeck={handleExitToDeck}
-            onCheer={handleCheer}
-          />
-        )}
-      </PhoneContainer>
+      {/* Liquid Screen Transition Viewport */}
+      <div className="w-full flex-1 flex flex-col justify-between z-10">
+        <AnimatePresence mode="wait">
+          {activeScreen === 'deck' ? (
+            <motion.div
+              key="screen-deck"
+              initial={{ opacity: 0, scale: 0.96, filter: 'blur(10px)' }}
+              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, scale: 1.04, filter: 'blur(10px)' }}
+              transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full flex-1 flex flex-col justify-between"
+            >
+              <PriorityDeck
+                userName={settings.userName}
+                tasks={tasks}
+                projects={projects}
+                activePriority={activePriority}
+                onSelectPriority={setActivePriority}
+                onStartTask={handleStartTask}
+                onAddTask={handleAddTask}
+                onOpenSettings={() => setIsSettingsOpen(true)}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="screen-timer"
+              initial={{ opacity: 0, scale: 0.96, filter: 'blur(10px)' }}
+              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, scale: 1.04, filter: 'blur(10px)' }}
+              transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full flex-1 flex flex-col justify-between"
+            >
+              <TimerDisplay
+                userName={settings.userName}
+                mode={mode}
+                timeLeft={timeLeft}
+                totalDuration={totalDuration}
+                isRunning={isRunning}
+                activeTask={activeTask}
+                onTogglePlay={handleTogglePlay}
+                onReset={handleReset}
+                onSkip={handleSkip}
+                onExitToDeck={handleExitToDeck}
+                onCheer={handleCheer}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
-      {/* Floating Ambient Controls Dock (Sound, Stats, AI, Dark/Light, Settings) */}
+      {/* Ambient Floating Controls Dock (Sound, Stats, AI, Dark/Light, Settings) */}
       <FloatingDock
         soundPlaying={activeSound !== 'none'}
         isDarkMode={settings.isDarkMode}

@@ -1,6 +1,6 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Play, Pause, RotateCcw, SkipForward, Coffee } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { X, Play, Pause, RotateCcw, SkipForward } from 'lucide-react';
 import { TimerMode, Task } from '../types';
 import { ClockTicks } from './ClockTicks';
 import { MorphingBlob } from './MorphingBlob';
@@ -39,62 +39,62 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
 
   const taskTitle = activeTask?.title || 'Project research';
 
-  // State 2: Deep Focus Mode (Screenshot 1 & 2 Center)
+  // State 2: Deep Focus Mode (Screenshot 1 & Full-screen Desktop)
   if (!isBreak) {
     return (
-      <div className="relative w-full h-full bg-gradient-to-b from-[#4E3696] to-[#402B82] text-white flex flex-col justify-between p-6 sm:p-7 select-none overflow-hidden transition-colors duration-500">
+      <div className="w-full h-full flex flex-col justify-between max-w-5xl mx-auto px-6 sm:px-12 py-6 sm:py-10 select-none">
         {/* Top Task Pill with (X) Exit button (Screenshot 1) */}
-        <div className="pt-2">
-          <div className="w-full rounded-full bg-white/15 backdrop-blur-md border border-white/10 px-5 py-2 flex items-center justify-between shadow-sm">
-            <span className="text-xs sm:text-sm font-medium text-white/90 truncate max-w-[220px]">
+        <div className="w-full flex justify-center">
+          <div className="w-full max-w-md rounded-full bg-white/15 hover:bg-white/20 backdrop-blur-md border border-white/15 px-6 py-2.5 sm:py-3 flex items-center justify-between shadow-sm transition-all">
+            <span className="text-xs sm:text-sm md:text-base font-semibold text-white/90 truncate max-w-[280px]">
               {taskTitle}
             </span>
             <motion.button
               whileHover={{ scale: 1.15, rotate: 90 }}
               whileTap={{ scale: 0.85 }}
               onClick={onExitToDeck}
-              className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#4E3696] shadow-sm ml-2 shrink-0"
+              className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#4E3696] shadow-sm ml-2 shrink-0 cursor-pointer"
               title="Return to Priorities"
             >
-              <X size={14} className="stroke-[2.5]" />
+              <X size={16} className="stroke-[2.5]" />
             </motion.button>
           </div>
         </div>
 
-        {/* Motivational Greeting (Screenshot 1: "Focus on a process Olivia!") */}
-        <div className="text-center my-auto pt-4">
-          <p className="text-xl sm:text-2xl font-medium tracking-tight text-white/90">
+        {/* Motivational Greeting & Giant Timer with spacious vertical breathing room */}
+        <div className="text-center my-auto py-6 sm:py-12">
+          <p className="text-2xl sm:text-3xl md:text-4xl font-medium tracking-tight text-white/90">
             Focus on a process
           </p>
-          <p className="text-2xl sm:text-3xl font-extrabold text-[#F8C8BA] tracking-tight mt-0.5">
+          <p className="text-3xl sm:text-4xl md:text-5xl font-black text-[#F8C8BA] tracking-tight mt-1 sm:mt-2">
             {userName}!
           </p>
 
           {/* Giant Minimalist Timer (Screenshot 1: "0:01") */}
           <motion.div
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={onTogglePlay}
-            className="cursor-pointer py-6 sm:py-8 my-2 flex items-center justify-center"
-            title="Click to Pause / Resume"
+            className="cursor-pointer py-4 sm:py-8 md:py-12 my-2 flex items-center justify-center select-none"
+            title="Click anywhere on time to Pause / Resume"
           >
-            <span className="text-7xl sm:text-8xl font-black font-sans tracking-tight text-white drop-shadow-sm leading-none">
+            <span className="text-8xl sm:text-9xl md:text-[11rem] lg:text-[12rem] font-bold font-sans tracking-tight text-white drop-shadow-sm leading-none">
               {minutes}:{String(seconds).padStart(2, '0')}
             </span>
           </motion.div>
 
           {/* Curved Clock Tick Marks (Screenshot 1) */}
-          <div className="w-full flex justify-center -mt-2 mb-4">
+          <div className="w-full flex justify-center -mt-2 sm:-mt-4 mb-6 sm:mb-8">
             <ClockTicks progress={progress} color="#FFFFFF" />
           </div>
 
-          {/* Cheering Pills (Screenshot 1: "Come on, Olivia 🤗" and "Step on it! 💪") */}
-          <div className="flex flex-col items-center gap-2.5 mt-2">
+          {/* Cheering Pills with comfortable padding (Screenshot 1) */}
+          <div className="flex flex-col items-center gap-3 sm:gap-4 mt-2">
             <motion.button
               whileHover={{ scale: 1.06 }}
               whileTap={{ scale: 0.92 }}
               onClick={() => onCheer(`Come on, ${userName}! You've got this! 🤗`)}
-              className="px-6 py-2.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md text-sm font-medium text-white shadow-sm transition-all border border-white/10"
+              className="px-8 sm:px-10 py-3 sm:py-3.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md text-sm sm:text-base font-semibold text-white shadow-md transition-all border border-white/15"
             >
               Come on, {userName} 🤗
             </motion.button>
@@ -102,8 +102,8 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
             <motion.button
               whileHover={{ scale: 1.06 }}
               whileTap={{ scale: 0.92 }}
-              onClick={() => onCheer(`Step on it, ${userName}! Pure momentum! 💪`)}
-              className="px-4 py-1 rounded-full text-xs font-medium text-white/40 hover:text-white/80 transition-all"
+              onClick={() => onCheer(`Step on it, ${userName}! Pure flow momentum! 💪`)}
+              className="px-5 py-1.5 rounded-full text-xs sm:text-sm font-medium text-white/50 hover:text-white/90 transition-all"
             >
               Step on it! 💪
             </motion.button>
@@ -111,35 +111,39 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
         </div>
 
         {/* Bottom Control Bar */}
-        <div className="flex items-center justify-center gap-6 pt-2 pb-1 text-white/70">
+        <div className="flex items-center justify-center gap-8 sm:gap-10 pt-4 pb-2 text-white/70">
           <motion.button
-            whileHover={{ scale: 1.15 }}
+            whileHover={{ scale: 1.2 }}
             whileTap={{ scale: 0.85 }}
             onClick={onReset}
-            className="p-2 rounded-full hover:bg-white/10 hover:text-white transition-all"
+            className="p-2.5 rounded-full hover:bg-white/10 hover:text-white transition-all cursor-pointer"
             title="Reset (R)"
           >
-            <RotateCcw size={16} />
+            <RotateCcw size={18} className="sm:w-5 sm:h-5" />
           </motion.button>
 
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={onTogglePlay}
-            className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-all shadow-md"
+            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-all shadow-lg cursor-pointer"
             title="Play / Pause (Space)"
           >
-            {isRunning ? <Pause size={18} className="fill-current" /> : <Play size={18} className="fill-current ml-0.5" />}
+            {isRunning ? (
+              <Pause size={22} className="fill-current sm:w-6 sm:h-6" />
+            ) : (
+              <Play size={22} className="fill-current ml-0.5 sm:w-6 sm:h-6" />
+            )}
           </motion.button>
 
           <motion.button
-            whileHover={{ scale: 1.15 }}
+            whileHover={{ scale: 1.2 }}
             whileTap={{ scale: 0.85 }}
             onClick={onSkip}
-            className="p-2 rounded-full hover:bg-white/10 hover:text-white transition-all"
+            className="p-2.5 rounded-full hover:bg-white/10 hover:text-white transition-all cursor-pointer"
             title="Skip to Break (S)"
           >
-            <SkipForward size={16} />
+            <SkipForward size={18} className="sm:w-5 sm:h-5" />
           </motion.button>
         </div>
       </div>
@@ -148,76 +152,80 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
 
   // State 3: Break Mode (Screenshot 2 Right: Organic Blob + "Take a break Olivia!")
   return (
-    <div className="relative w-full h-full bg-white dark:bg-[#1A1429] flex flex-col justify-between p-6 sm:p-7 select-none overflow-hidden transition-colors duration-500">
+    <div className="w-full h-full flex flex-col justify-between max-w-5xl mx-auto px-6 sm:px-12 py-6 sm:py-10 select-none">
       {/* Top Task Pill with (X) Exit button */}
-      <div className="pt-2">
-        <div className="w-full rounded-full bg-black/5 dark:bg-white/10 px-5 py-2 flex items-center justify-between shadow-sm">
-          <span className="text-xs sm:text-sm font-medium text-[#251E35] dark:text-white truncate max-w-[220px]">
+      <div className="w-full flex justify-center">
+        <div className="w-full max-w-md rounded-full bg-black/5 dark:bg-white/10 px-6 py-2.5 sm:py-3 flex items-center justify-between shadow-sm">
+          <span className="text-xs sm:text-sm md:text-base font-semibold text-[#251E35] dark:text-white truncate max-w-[280px]">
             {taskTitle}
           </span>
           <motion.button
             whileHover={{ scale: 1.15, rotate: 90 }}
             whileTap={{ scale: 0.85 }}
             onClick={onExitToDeck}
-            className="w-7 h-7 rounded-full bg-black/10 dark:bg-white/20 flex items-center justify-center text-[#251E35] dark:text-white shadow-sm ml-2 shrink-0"
+            className="w-8 h-8 rounded-full bg-black/10 dark:bg-white/20 flex items-center justify-center text-[#251E35] dark:text-white shadow-sm ml-2 shrink-0 cursor-pointer"
             title="Return to Priorities"
           >
-            <X size={14} className="stroke-[2.5]" />
+            <X size={16} className="stroke-[2.5]" />
           </motion.button>
         </div>
       </div>
 
-      {/* Center: Organic Fluid Blob & Floating Droplet (Screenshot 2 Right) */}
-      <div className="flex-1 flex flex-col items-center justify-center my-auto">
-        <MorphingBlob color="#FF5238" secondaryColor="#C6D2FD" size="lg">
+      {/* Center: Expansive Organic Fluid Blob & Floating Droplet (Screenshot 2 Right) */}
+      <div className="flex-1 flex flex-col items-center justify-center my-auto py-8">
+        <MorphingBlob color="#FF5238" secondaryColor="#C6D2FD" size="responsive">
           <div className="text-white select-none">
-            <span className="text-6xl sm:text-7xl font-black font-sans tracking-tight leading-none drop-shadow-sm">
+            <span className="text-7xl sm:text-8xl md:text-9xl font-black font-sans tracking-tight leading-none drop-shadow-sm">
               {minutes}:{String(seconds).padStart(2, '0')}
             </span>
           </div>
         </MorphingBlob>
 
         {/* Heading: "Take a break Olivia!" (Screenshot 2 Right) */}
-        <div className="text-center mt-6">
-          <p className="text-2xl sm:text-3xl font-semibold text-[#251E35] dark:text-white tracking-tight">
+        <div className="text-center mt-8 sm:mt-10">
+          <p className="text-3xl sm:text-4xl md:text-5xl font-semibold text-[#251E35] dark:text-white tracking-tight">
             Take a break
           </p>
-          <p className="text-2xl sm:text-3xl font-extrabold text-[#FF5238] tracking-tight">
+          <p className="text-3xl sm:text-4xl md:text-5xl font-black text-[#FF5238] tracking-tight mt-1">
             {userName}!
           </p>
         </div>
       </div>
 
       {/* Bottom Controls */}
-      <div className="flex items-center justify-center gap-6 pt-2 pb-2 text-[#251E35] dark:text-white/80">
+      <div className="flex items-center justify-center gap-8 sm:gap-10 pt-4 pb-2 text-[#251E35] dark:text-white/80">
         <motion.button
-          whileHover={{ scale: 1.15 }}
+          whileHover={{ scale: 1.2 }}
           whileTap={{ scale: 0.85 }}
           onClick={onReset}
-          className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-all"
+          className="p-2.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer"
           title="Reset"
         >
-          <RotateCcw size={16} />
+          <RotateCcw size={18} className="sm:w-5 sm:h-5" />
         </motion.button>
 
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={onTogglePlay}
-          className="w-12 h-12 rounded-full bg-[#FF5238] text-white flex items-center justify-center transition-all shadow-lg"
+          className="w-13 h-13 sm:w-16 sm:h-16 rounded-full bg-[#FF5238] text-white flex items-center justify-center transition-all shadow-xl cursor-pointer"
           title="Play / Pause"
         >
-          {isRunning ? <Pause size={20} className="fill-current" /> : <Play size={20} className="fill-current ml-0.5" />}
+          {isRunning ? (
+            <Pause size={24} className="fill-current sm:w-7 sm:h-7" />
+          ) : (
+            <Play size={24} className="fill-current ml-0.5 sm:w-7 sm:h-7" />
+          )}
         </motion.button>
 
         <motion.button
-          whileHover={{ scale: 1.15 }}
+          whileHover={{ scale: 1.2 }}
           whileTap={{ scale: 0.85 }}
           onClick={onSkip}
-          className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-all"
+          className="p-2.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer"
           title="End Break"
         >
-          <SkipForward size={16} />
+          <SkipForward size={18} className="sm:w-5 sm:h-5" />
         </motion.button>
       </div>
     </div>
