@@ -1,4 +1,4 @@
-# LockIt — Aesthetic, Research-Backed Pomodoro & Deep Work Hub
+# LockIt : Aesthetic, Research-Backed Pomodoro & Deep Work Hub
 
 > **Made with precision and heart by Allen Benny.**
 > *A minimalist, ultra-responsive study and focus sanctuary designed for deep work, cognitive flow, and mindful productivity.*
